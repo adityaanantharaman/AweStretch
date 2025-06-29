@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AweStretch — Hatch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(to bottom, #fdf6ed, #e5f5ed);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #textContainer.fade-text {
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      margin-top: 3vh;
+    }
+
+    #textContainer.visible {
+      opacity: 1;
+    }
+
+    h1 {
+      font-weight: 500;
+      font-size: 5vw;
+      letter-spacing: 0.02em;
+      color: #24303E;
+      margin: 1vh 0 0 0;
+    }
+
+    h2 {
+      font-weight: 500;
+      font-size: 2.2vw;
+      color: #24303E;
+      margin: 0.5vh 0 2vh 0;
+    }
+
+    p.subtitle {
+      font-size: 1.8vw;
+      font-weight: 500;
+      color: #5c5c5c;
+      margin: 1vh 0 4vh 0;
+    }
+
+    .egg-container {
+      position: relative;
+      width: min(50vw, 60vh);
+      height: calc(min(50vw, 60vh) * 1.3);
+      max-width: 100%;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(4px, -3px); }
+      50% { transform: translate(-4px, 3px); }
+      75% { transform: translate(3px, -2px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .crack-line {
+      fill: none;
+      stroke: #24303E;
+      stroke-width: 1.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      animation: draw 0.5s forwards;
+    }
+
+    @keyframes draw {
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden initially -->
+  <div class="fade-text" id="textContainer">
+    <h1>AweStretch</h1>
+    <h2>Track. Stretch. Thrive.</h2>
+    <p class="subtitle">We haven't hatched yet...</p>
+  </div>
+
+  <div class="egg-container" id="eggContainer">
+    <svg viewBox="0 0 220 300" preserveAspectRatio="xMidYMid meet" id="eggSvg">
+      <defs>
+        <filter id="dimpleTexture">
+          <feTurbulence type="turbulence" baseFrequency="0.15" numOctaves="4" seed="12" result="turbulence"/>
+          <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+          <feComposite in2="SourceGraphic" operator="in"/>
+        </filter>
+
+        <clipPath id="eggClip">
+          <ellipse cx="110" cy="150" rx="90" ry="130"/>
+        </clipPath>
+      </defs>
+
+      <ellipse
+        cx="110"
+        cy="150"
+        rx="90"
+        ry="130"
+        fill="#f2e6d0"
+        stroke="#bfa66b"
+        stroke-width="3"
+        filter="url(#dimpleTexture)"
+      />
+      <g id="crackGroup" clip-path="url(#eggClip)"></g>
+    </svg>
+  </div>
+
+  <script>
+    const eggContainer = document.getElementById("eggContainer");
+    const crackGroup = document.getElementById("crackGroup");
+    const textContainer = document.getElementById("textContainer");
+
+    let crackCount = 0;
+    let lastX = 110 + (Math.random() * 20 - 10);
+    let lastY = 80 + Math.random() * 20;
+    let textShown = false;
+
+    function generateCrackPath(startX, startY) {
+      const points = [];
+      let x = startX;
+      let y = startY;
+      const steps = 3 + Math.floor(Math.random() * 2);
+
+      for (let i = 0; i < steps; i++) {
+        x += (Math.random() - 0.5) * 20;
+        y += 10 + Math.random() * 5;
+        x = Math.max(30, Math.min(190, x));
+        y = Math.max(30, Math.min(270, y));
+        points.push([x, y]);
+      }
+
+      lastX = x;
+      lastY = y;
+
+      let path = `M ${startX.toFixed(1)} ${startY.toFixed(1)} `;
+      for (const [px, py] of points) {
+        path += `L ${px.toFixed(1)} ${py.toFixed(1)} `;
+      }
+      return path;
+    }
+
+    function addCrack() {
+      const pathData = generateCrackPath(lastX, lastY);
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", pathData);
+      path.setAttribute("class", "crack-line");
+      crackGroup.appendChild(path);
+    }
+
+    eggContainer.addEventListener("click", () => {
+      if (crackCount === 0 && !textShown) {
+        textContainer.classList.add("visible");
+        textShown = true;
+      }
+      if (crackCount < 10) {
+        addCrack();
+        crackCount++;
+      }
+      eggContainer.classList.add("shake");
+      setTimeout(() => eggContainer.classList.remove("shake"), 400);
+    });
+  </script>
+</body>
+</html>
